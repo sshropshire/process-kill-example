@@ -65,8 +65,4 @@ public class LibraryActivity extends AppCompatActivity {
         super.onDestroy();
         System.out.println("LibraryActivity: " + "onDestroy() called");
     }
-
-    @Override
-    public void onBackPressed() {
-    }
 }
