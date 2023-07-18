@@ -1,16 +1,54 @@
 package com.example.myapplication;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
+import android.widget.TextView;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.testlibrary.CallbackService;
-import com.example.testlibrary.LibraryService;
+import com.example.testlibrary.LibraryActivity;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "MainActivity";
+
+    ActivityResultLauncher<Intent> activityLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    TextView resultTextView = findViewById(R.id.resultTextView);
+                    int resultCode = result.getResultCode();
+
+                    String message = null;
+                    switch (resultCode) {
+                        case Activity.RESULT_OK:
+                            Intent intent = result.getData();
+                            if (intent != null) {
+                                message = intent.getStringExtra(LibraryActivity.EXTRA_MESSAGE);
+                            }
+                            break;
+                        case Activity.RESULT_CANCELED:
+                            message = "CANCELED";
+                            break;
+                        default:
+                            message = "UNKNOWN";
+                    }
+
+                    String resultText = String.format("Result: %s", message) ;
+                    Log.d(TAG, resultText);
+
+                    // also display result on screen
+                    resultTextView.setText(resultText);
+                }
+            });
 
     /**
      * Before getting started: update SDK location in local.properties.
@@ -46,14 +84,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void startLibraryActivity() {
-        LibraryService libraryService = new LibraryService();
-        libraryService.startMockChallenge(this, new CallbackService() {
-            @Override
-            public void onValidated(Context currentContext, String result) {
-                Intent intent = new Intent(currentContext, ResultActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                currentContext.startActivity(intent);
-            }
-        });
+        // clear result text
+        TextView resultTextView = findViewById(R.id.resultTextView);
+        resultTextView.setText("");
+
+        Intent intent = new Intent(this, LibraryActivity.class);
+        // Ref: https://stackoverflow.com/a/48177487
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        activityLauncher.launch(intent);
     }
 }

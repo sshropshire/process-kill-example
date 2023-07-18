@@ -1,5 +1,7 @@
 package com.example.testlibrary;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 
@@ -7,12 +9,20 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class LibraryActivity extends AppCompatActivity {
 
+    public static String EXTRA_MESSAGE = "com.example.testlibrary.EXTRA_MESSAGE";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_library);
         Button returnToApp = findViewById(R.id.return_to_app_button);
-        returnToApp.setOnClickListener(view -> UIInteractionFactory.getInstance().sendUserResponse(view.getContext(), "SUCCESS"));
+        returnToApp.setOnClickListener(view -> {
+            Intent data = new Intent();
+            data.putExtra(LibraryActivity.EXTRA_MESSAGE, "SUCCESS");
+            setResult(Activity.RESULT_OK, data);
+            finish();
+        });
     }
 
     @Override
@@ -54,9 +64,5 @@ public class LibraryActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         System.out.println("LibraryActivity: " + "onDestroy() called");
-    }
-
-    @Override
-    public void onBackPressed() {
     }
 }
