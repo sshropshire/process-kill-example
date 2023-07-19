@@ -14,41 +14,24 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.testlibrary.LibraryActivity;
+import com.example.testlibrary.LibraryCallback;
+import com.example.testlibrary.LibraryLauncher;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    ActivityResultLauncher<Intent> activityLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    TextView resultTextView = findViewById(R.id.resultTextView);
-                    int resultCode = result.getResultCode();
+    LibraryLauncher libraryLauncher = new LibraryLauncher(this, new LibraryCallback() {
+        @Override
+        public void onValidated(String message) {
+            TextView resultTextView = findViewById(R.id.resultTextView);
+            String resultText = String.format("Result: %s", message) ;
+            Log.d(TAG, resultText);
 
-                    String message = null;
-                    switch (resultCode) {
-                        case Activity.RESULT_OK:
-                            Intent intent = result.getData();
-                            if (intent != null) {
-                                message = intent.getStringExtra(LibraryActivity.EXTRA_MESSAGE);
-                            }
-                            break;
-                        case Activity.RESULT_CANCELED:
-                            message = "CANCELED";
-                            break;
-                        default:
-                            message = "UNKNOWN";
-                    }
-
-                    String resultText = String.format("Result: %s", message) ;
-                    Log.d(TAG, resultText);
-
-                    // also display result on screen
-                    resultTextView.setText(resultText);
-                }
-            });
+            // also display result on screen
+            resultTextView.setText(resultText);
+        }
+    });
 
     /**
      * Before getting started: update SDK location in local.properties.
@@ -79,18 +62,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Button startSDKButton = findViewById(R.id.appButton);
         startSDKButton.setOnClickListener(view -> {
-            startLibraryActivity();
+            libraryLauncher.startLibraryActivity(this);
         });
-    }
-
-    void startLibraryActivity() {
-        // clear result text
-        TextView resultTextView = findViewById(R.id.resultTextView);
-        resultTextView.setText("");
-
-        Intent intent = new Intent(this, LibraryActivity.class);
-        // Ref: https://stackoverflow.com/a/48177487
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        activityLauncher.launch(intent);
     }
 }
